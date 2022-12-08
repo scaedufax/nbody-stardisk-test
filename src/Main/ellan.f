@@ -1,4 +1,3 @@
-
 C***********************************************************************
 C
 C
@@ -27,6 +26,7 @@ C   -------------------------------
         INTEGER npart(nef1),ncum(nef1)
         DOUBLE PRECISION xf(nef1),ba(nef1),ca(nef1),taue(nef1),
      &     xmass(nef1),xmcum(nef1),r3av(nef1),r2av(nef1),zav(nef1),
+     &     erot(nef1),erotcm(nef1),angm(nef1),angmcm(nef1),
      &     avmass(nef1),vrav(nef1),vzav(nef1),vrot(nef1),sigr2(nef1),
      &     sigph2(nef1),sigz2(nef1),evec(3,3,nef1),xpo,ypo,zpo
         DOUBLE PRECISION vrad(nmax),vtan(nmax)
@@ -77,6 +77,8 @@ C       ------------------------------------------------------------
         DO 500 ief=1,nef1
 *
         xmass(ief) = 0.d0
+        erot(ief) = 0.d0
+        angm(ief) = 0.d0
         npart(ief) = 0
         r3av(ief) = 0.d0
         r2av(ief) = 0.d0
@@ -178,6 +180,8 @@ C       ---------------------------
               vrot(ief) = vrot(ief)/xmass(ief)
               vzav(ief) = vzav(ief)/xmass(ief)
               avmass(ief) = xmass(ief)/dble(npart(ief))
+              erot(ief) = 0.5d0*xmass(ief)*vrot(ief)**2
+              angm(ief) = r2av(ief)*vrot(ief)
 *
               sigr2(ief) = 0.d0
               sigph2(ief) = 0.d0
@@ -210,11 +214,11 @@ C=======================================================
 C------------------------------------------------------
 C--          copy tensor of inertia
 C------------------------------------------------------
-              DO 420 i=1,3
-                 DO 410 k=1,3
+              DO 520 i=1,3
+                 DO 510 k=1,3
                     tiwork(i,k) = ti(i,k) 
-410              CONTINUE
-420           CONTINUE
+510              CONTINUE
+520           CONTINUE
               np = 3
 
 C------------------------------------------------------
@@ -265,44 +269,56 @@ c             ENDIF
 
             xmcum(1) = xmass(1)
             ncum(1) = npart(1)
+            erotcm(1) = erot(1)
+            angmcm(1) = angm(1)
         DO 600 ief=2,nef1
             xmcum(ief) = xmcum(ief-1) + xmass(ief)
             ncum(ief) = ncum(ief-1) + npart(ief)
+            erotcm(ief) = erotcm(ief-1) + erot(ief)
+            angmcm(ief) = angmcm(ief-1) + angm(ief)
 600     CONTINUE
 C==================================================================
 C==         OUTPUT of data
 C===================================================================
       if(rank.eq.0)then
-            WRITE (6,40) (XF(K),K=1,NEF1)
- 40         FORMAT (/,11X,'TIME   E/ET:',1P,18(1X,E9.2))
-            WRITE (6,401) TTOT,(XMASS(K),K=1,NEF1)
- 401        FORMAT (3X,1P,E12.4,' MSHELL:',18(1X,E9.2))
-            WRITE (6,402) TTOT,(XMCUM(K),K=1,NEF1)
- 402        FORMAT (3X,1P,E12.4,'   MCUM:',18(1X,E9.2))
-            WRITE (6,403) TTOT,(NPART(K),K=1,NEF1)
- 403        FORMAT (3X,1P,E12.4,'  NPART:',18(1X,I9))
-            WRITE (6,404) TTOT,(NCUM(K),K=1,NEF1)
- 404        FORMAT (3X,1P,E12.4,'   NCUM:',18(1X,I9))
-            WRITE (6,405) TTOT,(AVMASS(K),K=1,NEF1)
- 405        FORMAT (3X,1P,E12.4,' AVMASS:',18(1X,E9.2))
-            WRITE (6,406) TTOT,(R3AV(K),K=1,NEF1)
- 406        FORMAT (3X,1P,E12.4,'   R3AV:',18(1X,E9.2))
-            WRITE (6,407) TTOT,(R2AV(K),K=1,NEF1)
- 407        FORMAT (3X,1P,E12.4,'   R2AV:',18(1X,E9.2))
-            WRITE (6,408) TTOT,(ZAV(K),K=1,NEF1)
- 408        FORMAT (3X,1P,E12.4,'    ZAV:',18(1X,E9.2))
-            WRITE (6,412) TTOT,(VROT(K),K=1,NEF1)
- 412        FORMAT (3X,1P,E12.4,' VROTEQ:',18(1X,E9.2))
-            WRITE (6,413) TTOT,(VRAV(K),K=1,NEF1)
- 413        FORMAT (3X,1P,E12.4,'   VRAV:',18(1X,E9.2))
-            WRITE (6,414) TTOT,(VZAV(K),K=1,NEF1)
- 414        FORMAT (3X,1P,E12.4,'   VZAV:',18(1X,E9.2))
-            WRITE (6,415) TTOT,(SIGR2(K),K=1,NEF1)
- 415        FORMAT (3X,1P,E12.4,' SGR2EQ:',18(1X,E9.2))
-            WRITE (6,416) TTOT,(SIGPH2(K),K=1,NEF1)
- 416        FORMAT (3X,1P,E12.4,' SIGPH2:',18(1X,E9.2))
-            WRITE (6,417) TTOT,(SIGZ2(K),K=1,NEF1)
- 417        FORMAT (3X,1P,E12.4,'  SIGZ2:',18(1X,E9.2))
+            WRITE (6,401) (XF(K),K=1,NEF1)
+ 401        FORMAT (/,11X,'TIME   E/ET:',1P,18(1X,E9.2))
+            WRITE (6,402) TTOT,(XMASS(K),K=1,NEF1)
+ 402        FORMAT (3X,1P,E12.4,' MSHELL:',18(1X,E9.2))
+            WRITE (6,403) TTOT,(XMCUM(K),K=1,NEF1)
+ 403        FORMAT (3X,1P,E12.4,'   MCUM:',18(1X,E9.2))
+            WRITE (6,404) TTOT,(EROT(K),K=1,NEF1)
+ 404        FORMAT (3X,1P,E12.4,'   EROT:',18(1X,E9.2))
+            WRITE (6,405) TTOT,(EROTCM(K),K=1,NEF1)
+ 405        FORMAT (3X,1P,E12.4,' EROTCM:',18(1X,E9.2))
+            WRITE (6,406) TTOT,(ANGM(K),K=1,NEF1)
+ 406        FORMAT (3X,1P,E12.4,'   ANGM:',18(1X,E9.2))
+            WRITE (6,407) TTOT,(ANGMCM(K),K=1,NEF1)
+ 407        FORMAT (3X,1P,E12.4,' ANGMCM:',18(1X,E9.2))
+            WRITE (6,408) TTOT,(NPART(K),K=1,NEF1)
+ 408        FORMAT (3X,1P,E12.4,'  NPART:',18(1X,I9))
+            WRITE (6,409) TTOT,(NCUM(K),K=1,NEF1)
+ 409        FORMAT (3X,1P,E12.4,'   NCUM:',18(1X,I9))
+            WRITE (6,410) TTOT,(AVMASS(K),K=1,NEF1)
+ 410        FORMAT (3X,1P,E12.4,' AVMASS:',18(1X,E9.2))
+            WRITE (6,411) TTOT,(R3AV(K),K=1,NEF1)
+ 411        FORMAT (3X,1P,E12.4,'   R3AV:',18(1X,E9.2))
+            WRITE (6,412) TTOT,(R2AV(K),K=1,NEF1)
+ 412        FORMAT (3X,1P,E12.4,'   R2AV:',18(1X,E9.2))
+            WRITE (6,413) TTOT,(ZAV(K),K=1,NEF1)
+ 413        FORMAT (3X,1P,E12.4,'    ZAV:',18(1X,E9.2))
+            WRITE (6,414) TTOT,(VROT(K),K=1,NEF1)
+ 414        FORMAT (3X,1P,E12.4,' VROTEQ:',18(1X,E9.2))
+            WRITE (6,415) TTOT,(VRAV(K),K=1,NEF1)
+ 415        FORMAT (3X,1P,E12.4,'   VRAV:',18(1X,E9.2))
+            WRITE (6,416) TTOT,(VZAV(K),K=1,NEF1)
+ 416        FORMAT (3X,1P,E12.4,'   VZAV:',18(1X,E9.2))
+            WRITE (6,417) TTOT,(SIGR2(K),K=1,NEF1)
+ 417        FORMAT (3X,1P,E12.4,' SGR2EQ:',18(1X,E9.2))
+            WRITE (6,418) TTOT,(SIGPH2(K),K=1,NEF1)
+ 418        FORMAT (3X,1P,E12.4,' SIGPH2:',18(1X,E9.2))
+            WRITE (6,419) TTOT,(SIGZ2(K),K=1,NEF1)
+ 419        FORMAT (3X,1P,E12.4,'  SIGZ2:',18(1X,E9.2))
 *
             WRITE (6,41) TTOT,(BA(K),K=1,NEF1)
  41         FORMAT (3X,1P,E12.4,'   B/A: ',18(1X,E9.2))
