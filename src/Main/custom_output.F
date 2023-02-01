@@ -334,6 +334,7 @@
                   S_D32(IK) = REAL(F3DOT(2)*D3SCALE_OUT)
                   S_D33(IK) = REAL(F3DOT(3)*D3SCALE_OUT)
                   S_POT(IK) = REAL(-PHIDBL(I)*POTSCALE_OUT)
+                  S_RHO(IK) = REAL(RHO(I))
                   S_STEP(IK) = REAL(STEP(I)*TSCALE_OUT)
                   S_STEPR(IK) = REAL(STEPR(I)*TSCALE_OUT)
                   S_T0(IK) = REAL(T0(I)*TSCALE_OUT)
@@ -540,6 +541,7 @@ C     &           + XREL(3,IM)*VREL(3,IM)
                S_F2(IK) = REAL(F(2,I)*FSCALE_OUT) 
                S_F3(IK) = REAL(F(3,I)*FSCALE_OUT) 
                S_POT(IK) = REAL(-PHIDBL(I)*POTSCALE_OUT)
+               S_RHO(IK) = REAL(RHO(I))
 *     stellar evolution         
                IF(KZ(12).GT.0) THEN
                   IF (L.EQ.1) THEN
@@ -884,6 +886,7 @@ C*     single
       S_F2(IK) = REAL(F(2,I)*FSCALE_OUT) 
       S_F3(IK) = REAL(F(3,I)*FSCALE_OUT) 
       S_POT(IK) = REAL(-PHIDBL(I)*POTSCALE_OUT)
+      S_RHO(IK) = REAL(RHO(I))
       S_FD1(IK) = REAL(FDOT(1,I)*FDSCALE_OUT)
       S_FD2(IK) = REAL(FDOT(2,I)*FDSCALE_OUT)
       S_FD3(IK) = REAL(FDOT(3,I)*FDSCALE_OUT)
