@@ -150,8 +150,7 @@ C$$$      END IF
       ELSE
           A3 = MAX(A3,ZNBMIN)
       END IF
-      RHOH = 0.01
-      IF (RHO(I).LT.RHOH.AND.NB_FLAG.EQ.1) THEN
+      IF (RHO(I).LT.KZ(43).AND.NB_FLAG.EQ.1) THEN
           A3 = A3*MAX(RHO(I)/RHOH,0.1)
       ELSE
           A3 = MAX(A3,ZNBMIN)
