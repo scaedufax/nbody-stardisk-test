@@ -694,6 +694,7 @@ C     &           + XREL(3,IM)*VREL(3,IM)
                B_D32R(IK) = REAL(D3REL(2)*D3SCALE_OUT)
                B_D33R(IK) = REAL(D3REL(3)*D3SCALE_OUT)
                B_POT(IK) = REAL(-PHIDBL(I)*POTSCALE_OUT)
+               B_RHO(IK) = REAL(RHO(I))
 *     Assume small perturbation (R.Sp. Oct. 2021)
                B_G(IK) = 0.D0
 *     Stellar evolution of two components

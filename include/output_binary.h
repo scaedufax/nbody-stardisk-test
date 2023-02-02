@@ -18,12 +18,12 @@
      &                  B_RS2(KMAX), B_L2(KMAX), B_TE2(KMAX),
      &                  B_RC1(KMAX), B_MC1(KMAX), B_RC2(KMAX), 
      &                  B_MC2(KMAX), B_A(KMAX), B_ECC(KMAX), B_P(KMAX),
-     &                  B_G(KMAX),
+     &                  B_G(KMAX), B_RHO(KMAX),
      &                  NB_KW1(KMAX), NB_NAM1(KMAX), NB_KW2(KMAX), 
      &                  NB_NAM2(KMAX), NB_KWC(KMAX), NB_NAMC(KMAX)
       REAL*4 B_M1, B_M2, B_XC1, B_XC2, B_XC3, B_VC1, B_VC2, B_VC3
       REAL*4 B_FC1, B_FC2, B_FC3, B_FDC1, B_FDC2, B_FDC3, B_G
-      REAL*4 B_D21, B_D22, B_D23, B_D31, B_D32, B_D33
+      REAL*4 B_D21, B_D22, B_D23, B_D31, B_D32, B_D33, B_RHO
       REAL*4 B_STEP, B_STEPR, B_T0, B_T0R, B_ASPN1, B_ASPN2
       REAL*4 B_XR1, B_XR2, B_XR3, B_VR1, B_VR2, B_VR3
       REAL*4 B_FR1, B_FR2, B_FR3, B_FDR1, B_FDR2, B_FDR3
