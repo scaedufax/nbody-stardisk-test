@@ -1036,6 +1036,9 @@ cc          WRITE (h5_step_name, *), h5_step
       CALL HDF5_write_real_vector_as_dset(h5_group_id,
      &        '165 ASPN2', B_ASPN2, N_BINARY, 1, h5_dset_ids(128),
      &        original_vec_len,finalize)
+      CALL HDF5_write_real_vector_as_dset(h5_group_id,
+     &        '166 RHO', B_RHO, N_BINARY, 1, h5_dset_ids(129),
+     &        original_vec_len,finalize)
 
       CALL h5fflush_f(h5_group_id, H5F_SCOPE_LOCAL_F, error)
       CALL h5gclose_f(h5_group_id, error) 
