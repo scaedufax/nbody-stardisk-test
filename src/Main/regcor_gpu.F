@@ -6,6 +6,7 @@
 *
       INCLUDE 'common6.h'
       INCLUDE 'omp_lib.h'
+      COMMON/POTDEN/ RHO(NMAX),XNDBL(NMAX),PHIDBL(NMAX)
 *     Safe for parallel, used variable: Listc
       COMMON/NEWXV/ XN(3,NMAX),XNDOT(3,NMAX)
 C      COMMON/CHAINC/  XC(3,NCMAX),UC(3,NCMAX),BODYC(NCMAX),ICH,
@@ -149,6 +150,13 @@ C$$$      END IF
       ELSE
           A3 = MAX(A3,ZNBMIN)
       END IF
+      RHOH = 0.01
+      IF (RHO(I).LT.RHOH.AND.NB_FLAG.EQ.1) THEN
+          A3 = A3*MAX(RHO(I)/RHOH,0.1)
+      ELSE
+          A3 = MAX(A3,ZNBMIN)
+      END IF
+
       A4 = A3/FLOAT(NNB)
 *
 *       Include inertial factor to prevent resonance oscillations in RS.
