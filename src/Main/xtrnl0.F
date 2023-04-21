@@ -6,6 +6,8 @@
 *
       INCLUDE 'common6.h'
       INCLUDE 'galaxy.h'
+      NAMELIST /INXTRNL0/ GMG, RG0, DISK, A, B, VCIRC, RCIRC, GMB, AR,
+     &        GAM,RG,VG,MP,AP2,MPDOT,TDELAY
 *
 *
 #ifdef PARALLEL
@@ -64,7 +66,11 @@
       IF (KZ(14).EQ.2) THEN
 *
 *       Read galaxy mass and central distance (solar units and kpc).
-         if(rank.eq.0) READ (5,*)  GMG, RG0
+         if(rank.eq.0) then
+      READ (NML=INXTRNL0, IOSTAT=IIC, UNIT=5)
+      IF (IIC.NE.0) WRITE (6, '("XTRNL0A: invalid Namelist format")')
+*        READ (5,*)  GMG, RG0
+         end if
 #if MPIINIT
       CALL MPI_BCAST(GMG,1,MPI_REAL8,0,MPI_COMM_WORLD,ierr)
       CALL MPI_BCAST(RG0,1,MPI_REAL8,0,MPI_COMM_WORLD,ierr)
@@ -105,9 +111,18 @@
       ELSE IF (KZ(14).EQ.3) THEN
 *
 *       Read all parameters (NB! Do not confuse with Oort's constants A, B).
-         if(rank.eq.0) 
-     &        READ (5,*)  GMG, DISK, A, B, VCIRC, RCIRC, GMB, AR, GAM,
-     &        (RG(K),K=1,3),(VG(K),K=1,3)
+         if(rank.eq.0)then 
+      READ (NML=INXTRNL0, IOSTAT=IIC, UNIT=5)
+      IF (IIC.NE.0) WRITE (6, '("XTRNL0B: invalid Namelist format")')
+      RG2 = RG(1)**2 + RG(2)**2 + RG(3)**2
+      VG2 = VG(1)**2 + VG(2)**2 + VG(3)**2
+      IF(RG2.EQ.0.D0.OR.VG2.EQ.0.D0.OR.VCIRC.EQ.0.D0)THEN
+         PRINT*,' Wrong initialization of Tidal Field for KZ(14)=3'
+         STOP
+      END IF
+*             READ (5,*)  GMG, DISK, A, B, VCIRC, RCIRC, GMB, AR, GAM,
+*    &        (RG(K),K=1,3),(VG(K),K=1,3)
+         end if
 #if MPIINIT
       CALL MPI_BCAST(GMG,1,MPI_REAL8,0,MPI_COMM_WORLD,ierr)
       CALL MPI_BCAST(DISK,1,MPI_REAL8,0,MPI_COMM_WORLD,ierr)
@@ -158,14 +173,14 @@ C          IF (RTIDE.EQ.0.0D0) RTIDE = 10.0
 *
           if(rank.eq.0.and.GMG.GT.0.0)
      &    WRITE (6,35)  GMG, SQRT(R02), OMEGA, RTIDE, RBAR
-   35     FORMAT (/,12X,'POINT-MASS MODEL (NB unit):    MG =',1P,E9.1,
-     &                  '  RG =',E9.1,'  OMEGA =',E9.1,
-     &                  '  RTIDE =',E9.2,'  RBAR =',0P,F6.2)
+   35     FORMAT (/,12X,' POINT-MASS MODEL (NB unit): MG =',1P,E13.5,
+     &                  '  RG =',E13.5,'  OMEGA =',E13.5,
+     &                  '  RTIDE =',E13.5,'  RBAR =',E13.5)
 
           IF (rank.eq.0.and.GMB.GT.0.0D0) THEN
               WRITE (6,36)  GMB, AR, GAM
-   36         FORMAT (/,12X,'GAMMA/ETA MODEL:    GMB =',1P,E9.1,
-     &                      '  AR =',E9.1,'  GAM =',E9.1)
+   36         FORMAT (/,12X,'GAMMA/ETA MODEL:    GMB =',1P,E13.5,
+     &                      '  AR =',E13.5,'  GAM =',E13.5)
           END IF
 
 *       Define disk and/or logarithmic halo parameters in N-body units.
@@ -174,8 +189,8 @@ C          IF (RTIDE.EQ.0.0D0) RTIDE = 10.0
               A = 1000.0*A/RBAR
               B = 1000.0*B/RBAR
               if(rank.eq.0) WRITE (6,40)  DISK, A, B
-   40         FORMAT (/,12X,'DISK MODEL:    MD =',1P,E9.1,
-     &                                   '  A =',E9.1,'  B =',E9.1)
+   40         FORMAT (/,12X,'DISK MODEL:    MD =',1P,E13.5,
+     &                                   '  A =',E13.5,'  B =',E13.5)
           END IF
 *
 *       Determine local halo velocity from total circular velocity.
@@ -240,7 +255,12 @@ C          IF (RTIDE.EQ.0.0D0) RTIDE = 10.0
 *       Include Plummer potential for 2D and 3D (set MP = 0 if not needed).
       IF (KZ(14).EQ.3.OR.KZ(14).EQ.4) THEN
 *       Check input for Plummer potential.
-         if(rank.eq.0) READ (5,*)  MP, AP2, MPDOT, TDELAY
+      IF(MP.EQ.0.D0)THEN
+         PRINT*,' Wrong initialization of Plummer Pot. KZ(14)=',KZ(14)
+         STOP 
+      END IF 
+*       The following values read by NAMELIST before
+*        if(rank.eq.0) READ (5,*)  MP, AP2, MPDOT, TDELAY
 #if MPIINIT
       CALL MPI_BCAST(MP,1,MPI_REAL8,0,MPI_COMM_WORLD,ierr)
       CALL MPI_BCAST(AP2,1,MPI_REAL8,0,MPI_COMM_WORLD,ierr)
@@ -278,8 +298,8 @@ C          IF (RTIDE.EQ.0.0D0) RTIDE = 10.0
       IF (KZ(14).LE.2) THEN
           RTIDE = (ZMASS/TIDAL(1))**0.3333
           IF(rank.eq.0) WRITE (6,90)  (TIDAL(K),K=1,4), TSCALE, RTIDE
-   90     FORMAT (/,12X,'TIDAL PARAMETERS:  ',1P,4E10.2,
-     &                  '  TSCALE =',E9.2,'  RTIDE =',0P,F10.5,/)
+   90     FORMAT (/,12X,' TIDAL PARAMETERS: ',1P,4E13.5,
+     &                  '  TSCALE =',E13.5,'  RTIDE =',E13.5,/)
       END IF
 *
       RETURN

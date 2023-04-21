@@ -1,4 +1,4 @@
-      SUBROUTINE KICKGW(I1,I2)
+      SUBROUTINE KICKGW(I1,I2,kicktype)
 *
 *     Written on July 2021 by Manuel Arca Sedda 
 *     (the kick.F routine has been used as a basis for this)
@@ -12,23 +12,11 @@
 
       REAL*8 RAN2
       REAL*8 VK(4)
-      REAL*8 G, M_sun, R_sun, parsec, Km, Kmps, cspeed, year
-
       REAL*8 mbh1,mbh2,abh1,abh2
       
       REAL*8 mas1,mas2,mas3,Qr, acosa, acosb, acosg
       REAL*8 mfinal, sfinal
 
-******c.g.s. **********************************
-      parameter (G=6.6743D-08, M_sun=1.9884D+33)
-      parameter (R_sun=6.955D+10, parsec=3.0856776D+18)
-      parameter (Km=1.0D+05, Kmps=1.0D+05)
-      parameter (cspeed=3.0D+10, year=3.154D+07)
-******************************************************
-      parameter (kicktype = 1)
-******************************************************
-
-      
 *      SPIN(I1) = 0.7
 *      SPIN(I2) = 0.7
 
@@ -36,8 +24,8 @@
       IF(Qr .GT. 1.0)THEN
          Qr = 1.0 / Qr
       ENDIF
-
       
+
       IF(kicktype .EQ. -2)THEN
          VKICK = 0.0
       ELSE IF(kicktype .EQ. -1)THEN
@@ -71,9 +59,11 @@
     
          IF(ASPN(I1).LE.0.0.OR.ASPN(I1).GT.1.0)THEN     
            ASPN(I1) = 0.5
+           SPIN(I1) = 0.5
          ENDIF
          IF(ASPN(I2).LE.0.0.OR.ASPN(I2).GT.1.0)THEN
            ASPN(I2) = 0.5
+           SPIN(I2) = 0.5
          ENDIF   
 
          abh1 = ASPN(I1)
@@ -84,6 +74,8 @@
          
          ASPN(I1) = sfinal
          ASPN(I2) = sfinal
+         SPIN(I1) = sfinal
+         SPIN(I2) = sfinal
 
       ENDIF
       
@@ -94,7 +86,8 @@
       
 
       THETA = RAN2(IDUM1)*TWOPI
-      SPHI  = RAN2(IDUM1)
+      PHI   = (RAN2(IDUM1)-0.5D0)*TWOPI/2.D0
+      SPHI  = SIN(PHI)
       X1    = ASIN(SPHI)
       CPHI  = COS(X1)
       VK(1) = COS(THETA)*CPHI*VKICK
@@ -114,11 +107,48 @@
      &        1P,E14.3,0P,2I10,2I4,5F9.3,
      &        1P,4E14.3)
          
+         NBKICK = NBKICK + 1
          
       ENDIF
 
       
+            
+      I = I2           
+      VI2 = 0.0
+      VF2 = 0.0
+*      CALL JPRED(I,TIME,TIME)
+      DO 10 K = 1,3
+          VI2 = VI2 + XDOT(K,I)**2
+          XDOT(K,I) = XDOT(K,I) + VK(K)/VSTAR
+          X0DOT(K,I) = XDOT(K,I)
+          VF2 = VF2 + XDOT(K,I)**2
+ 10   CONTINUE
+*     Modify energy loss due to increased velocity of single particle.
+      DETMP = - 0.5*BODY(I)*(VF2 - VI2)
+
+      I = I1            
+      VI2 = 0.0
+      VF2 = 0.0
+*     CALL JPRED(I,TIME,TIME)
+      DO 11 K = 1,3
+          VI2 = VI2 + XDOT(K,I)**2
+          XDOT(K,I) = XDOT(K,I) + VK(K)/VSTAR
+          X0DOT(K,I) = XDOT(K,I)
+          VF2 = VF2 + XDOT(K,I)**2
+ 11   CONTINUE
+*     Modify energy loss due to increased velocity of single particle.
+      DETMP = DETMP - 0.5*BODY(I)*(VF2 - VI2)
+
+
+      ECDOT = ECDOT + DETMP
       
+*     ks MPI communication
+*** removed the following call by M.A.S. Manuel Arca Sedda 12 Nov 2021
+*     call ksparmpi(K_store,K_real8,K_ECDOT,0,0,DETMP)
+
+
+      NKICK = NKICK + 1
+
       
       RETURN
 *
