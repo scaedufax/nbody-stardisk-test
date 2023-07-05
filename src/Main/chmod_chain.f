@@ -418,8 +418,11 @@ c$$$          END IF
               ELSE IF (GB.LT.0.01.AND.NCH.GT.4.AND.
      &                 (RDOT**2.GT.BODY(ICH)/RI.OR.RI.GT.RMIN)) THEN
                   if(rank.eq.0)
-     &            WRITE (6,28)  IESC, JESC, NAMEC(IESC), NAMEC(JESC),
+     &            WRITE (6,29)  IESC, JESC, NAMEC(IESC), NAMEC(JESC),
      &                          RI, RDOT**2, 2.0*BODY(ICH)/RI, RB
+   29             FORMAT(' CHAIN ESCAPE: IESC, JESC, NM1/2 = ',
+     &                   1P,2I4,2I8,
+     &                   ' RI VI**2 2*M/R RB', 4E15.7)
                   CM(9) = CM(9) - EB
                   GO TO 40
               ELSE
