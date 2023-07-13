@@ -1,4 +1,4 @@
-name: autotest namelist and old
+name: Demo simulation test
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: install dependencies
-      run: sudo apt-get install -y wget gfortran gcc g++;
+      run: sudo apt-get install -y wget gfortran gcc g++; gcc --version; g++ --version; gfortran --version;
 
     - name: configure
       run: >
@@ -49,7 +49,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: install dependencies
-      run: sudo apt-get install -y wget gfortran gcc g++;
+      run: sudo apt-get install -y wget gfortran gcc g++; gcc --version; g++ --version; gfortran --version;
 
     - name: configure
       run: >
