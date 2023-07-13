@@ -37,6 +37,8 @@
 #define MPIINIT 0
 #endif
 
+* Es ist gerade viel zu heiß draußen!
+
 #if MPIINIT
 *       Initialize MPI
       CALL MPI_INIT(ierr)
