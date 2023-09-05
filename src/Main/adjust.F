@@ -87,7 +87,7 @@ c$$$      end if
 *       Include non-zero virial energy for Plummer potential and/or 3D case.
       VIR = POT - VIR
 *       Note angular momentum term is contained in virial energy (#14=1/2).
-      Q = ZKIN/VIR
+      Q = 2*ZKIN/VIR-POT
       E(3) = ZKIN - POT + EPL
 
 *       Modify single particle energy by tidal energy (except pure 3D).
